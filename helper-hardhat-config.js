@@ -1,23 +1,24 @@
+// For TimeLock
+export const MIN_DELAY = 3600;
+export const PROPOSERS= [];
+export const EXECUTORS = [];
 
-  export const networkConfig = {
-    localhost: {},
-    hardhat: {},
-    sepolia: {
-      blockConfirmations: 6,
-    },
-  }
-  
-  export const developmentChains = ["hardhat", "localhost"]
-  export const proposalsFile = "proposals.json"
-  
-  // Governor Values
-  export const QUORUM_PERCENTAGE = 4 //  4% of voters to pass
-  export const MIN_DELAY = 3600 // 1 hour - after a vote passes, you have 1 hour before you can enact
-  // export const VOTING_PERIOD = 45818 // 1 week - how long the vote lasts. This is pretty long even for local tests
-  export const VOTING_PERIOD = 5 // blocks
-  export const VOTING_DELAY = 1 // 1 Block - How many blocks till a proposal vote becomes active
-  export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000"
-  
-  export const NEW_STORE_VALUE = 100
-  export const FUNC = "store"
-  export const PROPOSAL_DESCRIPTION = "Proposal #1 100 in the Box!"
+// For Governor Contract
+export const VOTING_DELAY = 1; // blocks
+export const VOTING_PERIOD = 5; // blocks
+export const QUORUM_PERCENTAGE = 4; // percentage
+
+// For Setting up Governance Contracts
+export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
+
+// Propose Script + Queue and Execute Script
+export const FUNC = "store";
+export const FUNC_ARGS = 100; // New value voted into Box.
+export const DESCRIPTION = "Proposal #1 - update  value of box to 100";
+export const PROPOSAL_FILE = "proposals.json";
+
+// Voting Script
+export const VOTE_REASON = "Cause Dao's score 100 for coolness";
+
+// TimeTravel
+export const developmentChains = ["hardhat", "localhost"];

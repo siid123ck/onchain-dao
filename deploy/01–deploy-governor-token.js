@@ -1,0 +1,39 @@
+import { ethers } from "hardhat";
+
+const deployGovernanceToken = async (hre) => {
+  const { getNamedAccounts, deployments, network } = hre;
+  const { deploy, log } = deployments;
+  const { deployer } = await getNamedAccounts();
+
+  log("Deploying Governance Token....");
+  const governanceToken = await deploy("GovernanceToken", {
+    from: deployer,
+    log: true,
+    args: [],
+    // waitConfirmations: 1, // For non-dev netwworks so we can verify
+  });
+
+  log(`01-Deployed 'GovernanceToken' at ${governanceToken.address}`);
+
+  // Delegate votes to deployer.
+  await delegate(governanceToken.address, deployer);
+  log(`Delegated votes to ${deployer} `);
+};
+
+const delegate = async (
+  governanceTokenAddress,
+  delegatedAccount
+) => {
+  const governanceToken = await ethers.getContractAt(
+    "GovernanceToken",
+    governanceTokenAddress
+  );
+  const txResponse = await governanceToken.delegate(delegatedAccount);
+  await txResponse.wait(1);
+  console.log(
+    `Checkpoints: ${await governanceToken.numCheckpoints(delegatedAccount)}`
+  );
+};
+
+export default deployGovernanceToken;
+deployGovernanceToken.tags = ["all", "governor"];

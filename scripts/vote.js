@@ -1,37 +1,47 @@
-import * as fs from "fs"
-import { network, ethers } from "hardhat"
-import { proposalsFile, developmentChains, VOTING_PERIOD } from "../helper-hardhat-config"
-import { moveBlocks } from "../utils/move-blocks"
+import { ethers, network } from "hardhat";
+import {
+  developmentChains,
+  PROPOSAL_FILE,
+  VOTE_REASON,
+  VOTING_PERIOD,
+} from "../hardhat-helper-config";
+import * as fs from "fs";
+import { moveBlocks } from "../utils/timetravel";
 
+const index = 0;
+const VOTE_NO = 0;
+const VOTE_YES = 1;
+const VOTE_ABSTAIN = 2;
 
-async function main() {
-  const proposals = JSON.parse(fs.readFileSync(proposalsFile, "utf8"))
-  const chainId = network.config && network.config.chainId ? network.config.chainId.toString() : '';
+export async function vote() {
+  const proposals = JSON.parse(fs.readFileSync(PROPOSAL_FILE, "utf8"));
 
-  // Use optional chaining to handle the case where proposals[chainId] is undefined
   const proposalId = proposals[chainId]?.at(-1);
-  const voteWay = 1
-  const reason = "I lika do da cha cha"
-  await vote(proposalId, voteWay, reason)
-}
 
-// 0 = Against, 1 = For, 2 = Abstain for this example
-export async function vote(proposalId, voteWay, reason) {
-  console.log("Voting...")
-  const governor = await ethers.getContract("GovernorContract")
-  const voteTx = await governor.castVoteWithReason(proposalId, voteWay, reason)
-  const voteTxReceipt = await voteTx.wait(1)
-  console.log(voteTxReceipt.events[0].args.reason)
-  const proposalState = await governor.state(proposalId)
-  console.log(`Current Proposal State: ${proposalState}`)
+  const governor = await ethers.getContract("GovernorContract");
+  const voteTx = await governor.castVoteWithReason(
+    proposalId,
+    VOTE_YES,
+    VOTE_REASON
+  );
+  voteTx.wait(1);
+
+  let proposalState = await governor.state(proposalId);
+  console.log(`Proposal State before voting period is over: ${proposalState}`);
+
+  // Move time forward past the VOTING_PERIOD
   if (developmentChains.includes(network.name)) {
-    await moveBlocks(VOTING_PERIOD + 1)
+    await moveBlocks(VOTING_PERIOD + 1);
   }
+
+  proposalState = await governor.state(proposalId);
+  console.log(`Proposal State after voting period is over: ${proposalState}`);
+  console.log("Voting complete.");
 }
 
-main()
+vote()
   .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
+  .catch((err) => {
+    console.log(err);
+    process.exit(1);
+  });
